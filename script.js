@@ -210,7 +210,11 @@ precision mediump float;
 #endif
 uniform vec2 uRes,uM; uniform float uT,uP,uI,uG;
 float h11(float n){return fract(sin(n*127.1)*43758.5453);}
+#ifdef SAFE
+float h21(vec2 p){vec3 q=fract(vec3(p.xyx)*.1031);q+=dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}   /* tanpa sin(): aman di GPU HP */
+#else
 float h21(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+#endif
 float vn(float x){float i=floor(x),f=fract(x);f=f*f*(3.-2.*f);return mix(h11(i),h11(i+1.),f);}
 float n2(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
   return mix(mix(h21(i),h21(i+vec2(1.,0.)),f.x),mix(h21(i+vec2(0.,1.)),h21(i+vec2(1.,1.)),f.x),f.y);}
@@ -292,7 +296,9 @@ void main(){
     return o;
   };
   const v = mk(gl.VERTEX_SHADER, "attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}");
-  const f = mk(gl.FRAGMENT_SHADER, FS);
+  /* GPU HP sering kurang akurat di sin() dengan angka besar -> noise awan jadi kotak-kotak. Di HP pakai hash tanpa sin(). */
+  const hp = gl.getShaderPrecisionFormat && gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT);
+  const f = mk(gl.FRAGMENT_SHADER, (LITE || !hp || !hp.precision ? "#define SAFE\n" : "") + FS);
   if (!v || !f) return;
   const pr = gl.createProgram();
   gl.attachShader(pr, v); gl.attachShader(pr, f); gl.linkProgram(pr);
