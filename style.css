@@ -1,0 +1,418 @@
+/* ===== Variabel ===== */
+:root{
+  --navy:#050510; --blue:#c85a1c; --amber:#f0a15e; --ink:#12152a; --lightbg:#f5efe8;
+  --font:"Poppins",Verdana,system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--navy);color:#fff;font:400 16px/1.7 var(--font);overflow-x:clip}
+h1,h2,h3{margin:0;line-height:1.15}
+a{color:inherit;text-decoration:none}
+img{max-width:100%}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* ===== Tombol ===== */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;border-radius:14px;font:600 .95rem var(--font);border:2px solid transparent;cursor:pointer;color:#fff;background:none;transition:transform .2s,box-shadow .2s,background .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn.blue{background:var(--blue);box-shadow:0 10px 24px -12px var(--blue)}
+.btn.blue:hover{box-shadow:0 14px 28px -10px var(--blue)}
+.btn.out{border-color:#cdd3e6;color:var(--ink)}
+.btn.out:hover{background:#fff}
+.btn.sm{padding:9px 20px;font-size:.85rem;border-radius:12px}
+
+/* ===== Navbar ===== */
+.nav{position:fixed;top:46px;left:0;right:0;z-index:50;display:flex;justify-content:center;pointer-events:none}
+.pill{pointer-events:auto;position:relative;display:flex;align-items:center;padding:8px;border-radius:999px;background:rgba(22,27,44,.78);border:1px solid rgba(255,255,255,.12);box-shadow:0 12px 30px -14px rgba(0,0,0,.6);transition:background .35s,border-color .35s}
+.nav.light .pill{background:rgba(255,255,255,.82);border-color:rgba(0,0,0,.06);box-shadow:0 12px 30px -14px rgba(20,30,80,.35)}
+.links{display:flex;gap:4px;list-style:none;margin:0;padding:0}
+.links a{display:block;padding:10px 22px;border-radius:999px;font-weight:600;font-size:.92rem;color:#fff;transition:background .25s,color .25s,box-shadow .25s}
+.nav.light .links a{color:var(--ink)}
+.links a.active{background:var(--blue);color:#fff;box-shadow:0 8px 20px -8px var(--blue)}
+.burger{display:none;background:none;border:0;color:inherit;font-size:1.3rem;width:44px;height:40px;cursor:pointer}
+.nav.light .burger{color:var(--ink)}
+.mascot{position:absolute;top:-31px;left:0;margin-left:-17px;width:34px;height:34px;border-radius:50%;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;gap:7px;pointer-events:none;transition:transform .5s cubic-bezier(.3,1.35,.5,1)}
+.mascot::after{content:"";position:absolute;bottom:-4px;left:50%;width:9px;height:9px;background:#fff;transform:translateX(-50%) rotate(45deg)}
+.mascot i{width:6px;height:8px;border-radius:50%;background:#111;margin-top:-3px;z-index:1;transition:height .2s}
+.mascot b{position:absolute;bottom:7px;left:50%;width:10px;height:5px;margin-left:-5px;border-bottom:2px solid #111;border-radius:0 0 10px 10px;z-index:1}
+.mascot.happy i{height:3px;margin-top:0}
+
+/* ===== Intro: sunrise WebGL ===== */
+.intro{position:relative;height:420vh;background:var(--navy);--p:0}
+.pin{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:var(--navy)}
+.pin>*{position:absolute}
+.sky{inset:0;background:linear-gradient(180deg,#1b2736 0%,#5a7084 45%,#f0bf93 100%)}
+.gl{inset:0;width:100%;height:100%;opacity:0;transition:opacity 1.6s}
+.gl.on{opacity:1}
+
+/* Judul: tersembunyi sampai scroll kedua, huruf naik satu per satu, berada DI BELAKANG orang */
+.welcome{left:0;right:0;top:12vh;z-index:3;text-align:center;font:800 clamp(3rem,min(11.5vw,18.5vh),10rem)/.9 "Big Shoulders Display","Arial Narrow",Impact,sans-serif;letter-spacing:.01em;color:#fff5ea;padding:0 4%;text-wrap:balance;text-shadow:0 6px 40px rgba(20,12,10,.35);pointer-events:none;transform:translateY(calc(var(--p) * -14vh)) scale(calc(1 + var(--p) * .1));opacity:calc(1 - var(--p) * 3)}
+.welcome .w{display:inline-block;white-space:nowrap;margin:0 .1em}
+.welcome .w:nth-child(odd){translate:calc(var(--p) * -50vw) calc(var(--p) * -14vh);rotate:calc(var(--p) * -9deg)}
+.welcome .w:nth-child(even){translate:calc(var(--p) * 50vw) calc(var(--p) * -14vh);rotate:calc(var(--p) * 9deg)}
+.welcome .ch{display:inline-block;opacity:0;transform:translateY(55%) rotate(4deg);filter:blur(6px);transition:opacity .45s ease,transform .8s cubic-bezier(.2,.8,.2,1),filter .6s ease;transition-delay:0s}
+.intro[data-stage="1"] .welcome .ch{opacity:1;transform:none;filter:none;transition-delay:calc(var(--i) * 38ms + .35s)}
+
+/* Orang berdiri di ujung gua (kiri), menghadap gunung */
+.person{bottom:0;left:13vw;height:62vh;width:auto;z-index:4;transform-origin:50% 100%;transform:translate(calc(var(--p) * 30vw),calc(var(--p) * -3vh)) scale(calc(1 - var(--p) * .6));opacity:calc(1.9 - var(--p) * 2.2);animation:rise 2s cubic-bezier(.2,.8,.2,1) both .2s;transition:scale 1.4s cubic-bezier(.2,.8,.2,1)}
+.intro[data-stage="1"] .person{scale:1.04}
+@keyframes rise{from{opacity:0;translate:0 5vh}}
+
+/* Mulut gua: bingkai batu gelap, menjauh (kamera keluar gua) pada scroll pertama */
+.cave{inset:-3%;z-index:6;pointer-events:none;will-change:transform,opacity;transform-origin:62% 48%;transition:transform 1.3s cubic-bezier(.65,0,.25,1),opacity 1s ease .25s}
+.cave canvas{display:block;width:100%;height:100%}
+.intro:not([data-stage="0"]) .cave{transform:scale(2.3);opacity:0}
+
+.ground{left:0;right:0;bottom:0;height:24vh;z-index:7;pointer-events:none;background:linear-gradient(transparent,rgba(5,5,16,.96))}
+.veil{inset:0;z-index:8;background:var(--navy);opacity:calc((var(--p) - .93) * 16);pointer-events:none}
+.intro.done .sky,.intro.done .gl,.intro.done .person,.intro.done .cave,.intro.done .welcome{visibility:hidden}   /* setelah layar tertutup penuh: buang sisa warna langit yang bisa menyembul 1px di tepi */
+/* ruang hitam polos antara Home dan halaman berikutnya */
+.gap{position:relative;z-index:2;height:34vh;margin-top:-1px;background:var(--navy)}
+
+/* ===== Section dasar ===== */
+.sec{position:relative;padding:0;overflow:clip}
+.sec>.lines+.wrap{padding-top:140px}
+.sec>.wrap:last-child{padding-bottom:100px}
+.sec>.wrap{position:relative;z-index:1}
+/* Garis kontur interaktif: kanvas seukuran layar yang "menempel" di dalam tiap section */
+.lines{position:sticky;top:0;display:block;width:100%;height:100vh;height:100svh;margin-bottom:-100vh;margin-bottom:-100svh;z-index:0;pointer-events:none}
+.dark{background:var(--navy);color:#fff}
+.light{background:var(--lightbg);color:var(--ink)}
+.title{text-align:center;font:800 clamp(3rem,8vw,6.5rem)/.95 "Big Shoulders Display","Arial Narrow",Impact,sans-serif;text-transform:uppercase;letter-spacing:.01em;margin-bottom:18px}
+.sub{text-align:center;max-width:640px;margin:0 auto 48px;opacity:.75}
+
+/* ===== About: Hi, I'm ===== */
+.hero2{display:grid;grid-template-columns:1fr minmax(280px,470px) 1fr;gap:28px;align-items:end;min-height:560px;margin-bottom:90px}
+.h-left{align-self:center}
+.h-right{align-self:center}
+.hi{font:800 clamp(2.8rem,5vw,4.8rem)/.95 "Big Shoulders Display","Arial Narrow",Impact,sans-serif;text-transform:uppercase;margin-bottom:28px;overflow-wrap:break-word}
+.hi span{display:block;color:var(--amber);margin-bottom:4px}
+.h-right p{margin:0 0 26px;opacity:.9}
+.photo-wrap{position:relative;aspect-ratio:432/578;width:100%;-webkit-mask-image:linear-gradient(#000 74%,transparent);mask-image:linear-gradient(#000 74%,transparent);touch-action:pan-y}
+.photo-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:bottom;-webkit-user-select: none; user-select:none;-webkit-user-drag:none}
+.photo-wrap.nophoto{border:1px dashed rgba(255,255,255,.25);border-radius:24px;display:grid;place-items:center;-webkit-mask-image:none;mask-image:none}
+.photo-wrap.nophoto::before{content:"Taruh foto di img/foto.png";font-size:.85rem;opacity:.6;text-align:center;padding:20px}
+@property --r{syntax:"<length>";inherits:true;initial-value:0px}
+.photo-wrap{--x:50%;--y:50%;--r:0px;transition:--r .4s ease}
+.photo-wrap.on{--r:130px}
+.photo-wrap .alt{
+  -webkit-mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),#000 0%,#000 35%,transparent 100%);
+  mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),#000 0%,#000 35%,transparent 100%)}
+.photo-wrap .base{
+  -webkit-mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),transparent 0%,transparent 35%,#000 100%);
+  mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),transparent 0%,transparent 35%,#000 100%)}
+.photo-wrap .alt.tint{filter:sepia(1) saturate(8) hue-rotate(-38deg) brightness(.8) contrast(1.25)}
+/* Jaring laba-laba (hanya muncul jika foto-spiderman.png tidak ada), dibatasi ke bentuk badan di foto.png */
+.photo-wrap .web{display:none;position:absolute;inset:0;pointer-events:none;
+  background:
+    repeating-conic-gradient(from 0deg at var(--x) var(--y),rgba(255,255,255,.55) 0 .7deg,transparent .7deg 22.5deg),
+    repeating-radial-gradient(circle at var(--x) var(--y),transparent 0 20px,rgba(255,255,255,.4) 20px 21.5px);
+  -webkit-mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),#000 0%,#000 35%,transparent 100%),url("img/foto.png");
+  mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),#000 0%,#000 35%,transparent 100%),url("img/foto.png");
+  -webkit-mask-composite:source-in;mask-composite:intersect;
+  -webkit-mask-size:100% 100%,contain;mask-size:100% 100%,contain;
+  -webkit-mask-position:0 0,center bottom;mask-position:0 0,center bottom;
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.photo-wrap.fb .web{display:block}
+.photo-wrap .dot{position:absolute;width:10px;height:10px;border-radius:50%;background:#fff;opacity:0;pointer-events:none;transform:translate(-50%,-50%);transition:opacity .3s;z-index:2}
+.photo-wrap.on .dot{opacity:.9}
+
+/* ===== Timeline ===== */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:20px}
+.col-title{font-size:1.4rem;margin-bottom:28px}
+.tl{list-style:none;margin:0;padding:0;position:relative;display:grid;gap:34px}
+.tl::before{content:"";position:absolute;left:17px;top:8px;bottom:8px;width:2px;background:rgba(255,255,255,.12)}
+.tl li{position:relative;padding-left:60px;opacity:.35;transition:opacity .45s}
+.tl li.on{opacity:1}
+.tl .n{position:absolute;left:0;top:0;width:36px;height:36px;border-radius:50%;background:#1a1d2e;display:grid;place-items:center;font-weight:700;font-size:.85rem;color:#8b90a5;transition:.4s}
+.tl li.on .n{background:var(--amber);color:#2a1405;box-shadow:0 0 20px rgba(240,161,94,.5)}
+.tl::after{content:"";position:absolute;left:17px;top:8px;width:2px;height:calc((100% - 16px) * var(--tp,0));background:linear-gradient(var(--amber),#e2762c);box-shadow:0 0 12px rgba(240,161,94,.6)}
+.tl .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.tl .row b{font-weight:600}
+.tl .row em{margin-left:auto;font-style:normal;font-size:.75rem;padding:3px 12px;border-radius:999px;background:rgba(255,255,255,.08)}
+.mono{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.08);font-weight:700;font-size:.75rem;flex:none}
+.tl .ttl{font-weight:700;font-size:1.15rem;margin:10px 0 2px}
+.tl .meta{font-size:.82rem;opacity:.7}
+.tag{display:inline-block;margin-left:8px;font-size:.72rem;padding:2px 10px;border-radius:8px;background:rgba(255,255,255,.08)}
+
+/* ===== Skills ===== */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.card{border-radius:22px;padding:26px;transition:transform .25s,border-color .25s}
+.card:hover{transform:translateY(-4px)}
+.card h3{font-size:1.05rem;margin-bottom:16px}
+.card.d{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09)}
+.card.d:hover{border-color:var(--amber)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:8px;font-size:.84rem;padding:6px 13px;border-radius:999px;background:rgba(255,255,255,.08)}
+.chip i{font:700 .62rem var(--font);font-style:normal;background:var(--blue);border-radius:6px;padding:2px 6px}
+.chip.l{background:#fdeede;color:#7a3a10}
+
+/* ===== Projects ===== */
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:680px;margin:30px auto 44px;padding:8px;background:#fff;border-radius:22px;box-shadow:0 14px 40px -22px rgba(30,40,100,.4)}
+.tab{border:0;background:none;border-radius:16px;padding:12px 8px;font:600 .9rem var(--font);color:#7b819a;cursor:pointer;transition:.25s}
+.tab span{display:block;font-size:1rem}
+.tab.on{background:var(--blue);color:#fff}
+.panel{display:none}.panel.on{display:block}
+.empty{text-align:center;color:#7b819a;padding:50px 0}
+.car{position:relative}
+.track{display:flex;gap:24px;overflow-x:auto;scroll-snap-type:x mandatory;padding:10px 6px 40px;scrollbar-width:none}
+.track::-webkit-scrollbar{display:none}
+.pcard{flex:0 0 min(360px,84%);scroll-snap-align:start;background:#fff;border-radius:24px;padding:18px 18px 24px;box-shadow:0 22px 50px -28px rgba(30,40,100,.45);display:flex;flex-direction:column;gap:12px;transition:transform .25s}
+.pcard:hover{transform:translateY(-5px)}
+.thumb{aspect-ratio:4/3;border-radius:16px;background:repeating-linear-gradient(135deg,#fdeede 0 14px,#fff7ef 14px 28px);display:grid;place-items:center;color:#7b819a;font-size:.78rem}
+.pcard img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:16px}
+.pcard.cert img{object-fit:contain;background:#f6f9fd;border:1px solid #e8edf5}   /* sertifikat tidak terpotong */
+.pcard h3{font-size:1.2rem;margin-top:4px}
+.pcard p{margin:0;color:#585e78;font-size:.9rem;display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.row2{display:flex;gap:10px;margin-top:auto;padding-top:6px}
+.arrow{position:absolute;top:42%;z-index:5;width:46px;height:46px;border-radius:50%;border:0;background:var(--blue);color:#fff;font-size:1.6rem;line-height:1;cursor:pointer;box-shadow:0 10px 24px -8px var(--blue);transition:transform .2s}
+.arrow:hover{transform:scale(1.08)}
+.arrow.l{left:-14px}.arrow.r{right:-14px}
+
+/* ===== Contact ===== */
+.two.c{margin-top:0;align-items:start}
+.card.w{background:#fff;box-shadow:0 22px 50px -28px rgba(30,40,100,.45);color:var(--ink)}
+.link{display:flex;align-items:center;gap:14px;padding:14px 4px;border-top:1px solid #eceef6;transition:padding .2s}
+.link:hover{padding-left:12px}
+.link .mono{background:#fdeede;color:#7a3a10}
+.link div{flex:1;line-height:1.35}
+.link small{display:block;color:#7b819a}
+.link i{font-style:normal;color:#7b819a}
+form label{display:block;font-size:.85rem;font-weight:600;margin-bottom:14px}
+form input,form textarea{display:block;width:100%;margin-top:6px;padding:12px 14px;border:1px solid #dde1f0;border-radius:12px;font:400 .95rem var(--font);color:var(--ink);background:#fafbff;resize:vertical}
+form input:focus,form textarea:focus{outline:2px solid var(--blue);border-color:transparent}
+
+/* ===== Footer ===== */
+.foot{background:var(--navy);border-top:1px solid rgba(255,255,255,.08);padding:30px 0;font-size:.88rem;color:#9aa1b8}
+.foot .wrap{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.foot nav,.foot .soc{display:flex;gap:18px}
+.foot a:hover{color:#fff}
+
+/* ===== Modal ===== */
+dialog{border:0;border-radius:22px;background:#fff;color:var(--ink);max-width:460px;width:calc(100% - 32px);padding:28px}
+dialog::backdrop{background:rgba(5,5,16,.6)}
+dialog p,dialog ul{color:#585e78}dialog ul{padding-left:18px}
+
+/* ===== Animasi masuk ===== */
+.reveal{opacity:0;transform:translate(var(--tx,0),30px) rotate(var(--tr,0deg)) scale(.95);transition:opacity .8s,transform .9s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1;transform:none}
+.reveal.in.live{transition:transform .15s}
+.grid3 .card:nth-child(3n+1){--tx:-70px;--tr:-4deg}.grid3 .card:nth-child(3n){--tx:70px;--tr:4deg}
+.card.d{position:relative}
+.card.d::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(260px circle at var(--mx,50%) var(--my,50%),rgba(240,161,94,.2),transparent 60%)}
+.card.d:hover::before{opacity:1}
+/* progress bar, marquee, reveal fajar, headline kontak */
+.mq{background:var(--navy);overflow:hidden;padding:20px 0 70px;white-space:nowrap}
+.mr{display:flex;gap:4vw;width:max-content;font:800 clamp(4rem,12vw,11rem)/1.05 "Big Shoulders Display","Arial Narrow",Impact,sans-serif;text-transform:uppercase;color:transparent;-webkit-text-stroke:1.5px rgba(240,191,147,.55)}
+.mr span:nth-child(even){color:var(--amber);-webkit-text-stroke:0}
+.mr.a{transform:translateX(calc(var(--m,0) * -1px - 10%))}
+.mr.b{transform:translateX(calc(var(--m,0) * 1px - 70%))}
+.big{font:800 clamp(2.4rem,7vw,6rem)/1 "Big Shoulders Display","Arial Narrow",Impact,sans-serif;text-transform:uppercase;text-align:center;margin:0 auto 40px;max-width:14ch;background:linear-gradient(90deg,#1b2736,#e2762c,#f0bf93,#1b2736);background-size:300% 100%;background-position:calc(var(--bg,0) * 1%) 0;-webkit-background-clip:text;background-clip:text;color:transparent}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}.person{animation:none}.cave,.welcome .ch,.person{transition:none}}
+
+/* ===== Responsif ===== */
+@media (max-width:900px){
+  .hero2{grid-template-columns:1fr;min-height:0;gap:20px}
+  .photo-wrap{max-width:380px;margin:0 auto;order:2}
+  .h-left{order:1}.h-right{order:3}
+  .two{grid-template-columns:1fr;gap:44px}
+  .grid3{grid-template-columns:repeat(2,1fr)}
+  .arrow.l{left:0}.arrow.r{right:0}
+}
+@media (max-width:760px){
+  .nav{top:14px;justify-content:flex-end;padding:0 16px}
+  .pill{padding:4px}
+  .burger{display:block}
+  .mascot{display:none}
+  .links{display:none;position:absolute;top:calc(100% + 8px);right:0;min-width:190px;flex-direction:column;padding:10px;border-radius:22px;background:rgba(22,27,44,.92);-webkit-backdrop-filter: blur(14px); backdrop-filter:blur(14px)}
+  .nav.light .links{background:rgba(255,255,255,.95)}
+  .links.open{display:flex}
+  .person{height:48vh;left:3vw}
+  .welcome{top:14vh}
+
+  .sec>.lines+.wrap{padding-top:110px}
+  .sec>.wrap:last-child{padding-bottom:70px}
+}
+@media (max-width:560px){.grid3{grid-template-columns:1fr}.tabs{grid-template-columns:repeat(3,1fr)}.tab{font-size:.75rem}}
+
+
+/* ===== Folder Projects / Certificates / Awards (About): gambar mengintip, terangkat saat hover, menyebar saat dibuka ===== */
+.folders{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:120px}
+.folder{position:relative;display:block;height:216px;color:#fff;cursor:pointer;outline:none;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.folder::before{content:"";position:absolute;left:0;right:0;top:26px;bottom:0;border-radius:6px 22px 22px 22px;background:linear-gradient(#1a1e2e,#10131f);border:1px solid rgba(255,255,255,.08)}
+.f-tab{position:absolute;left:0;top:0;width:44%;height:36px;border-radius:16px 0 0 0;background:#1a1e2e;border:1px solid rgba(255,255,255,.08);border-bottom:0;-webkit-clip-path: polygon(0 0,86% 0,100% 100%,0 100%); clip-path:polygon(0 0,86% 0,100% 100%,0 100%)}
+.sheets{position:absolute;left:16px;right:16px;top:40px;height:0;-webkit-clip-path: inset(-420px -120px -176px -120px); clip-path:inset(-420px -120px -176px -120px)}   /* bebas ke atas, tapi terpotong di dasar folder */
+.sheets>*{position:absolute;left:0;top:0;width:100%;height:130px;object-fit:cover;object-position:50% 0;border-radius:10px;background:#252a40;
+  transform:translate(var(--f-x,0),var(--f-yy,var(--f-y))) rotate(var(--f-r));transition:transform .55s cubic-bezier(.2,.8,.2,1),height .55s cubic-bezier(.2,.8,.2,1);box-shadow:0 -6px 18px -8px rgba(0,0,0,.6);-webkit-user-drag:none}
+.sheets>:nth-child(1){--f-y:20px;--f-r:-2.2deg;--f-x:0px;--f-open-y:-120px;--f-open-r:-7deg;--f-open-x:-34px}
+.sheets>:nth-child(2){--f-y:30px;--f-r:1.6deg;--f-open-y:-104px;--f-open-r:-3deg;--f-open-x:-12px}
+.sheets>:nth-child(3){--f-y:40px;--f-r:-.6deg;--f-open-y:-88px;--f-open-r:1.5deg;--f-open-x:10px}
+.sheets>:nth-child(4){--f-y:48px;--f-r:1deg;--f-open-y:-72px;--f-open-r:5.5deg;--f-open-x:32px}
+.sheets>i:nth-child(1){background:linear-gradient(135deg,#3a2a68,#6d44b8)}
+.sheets>i:nth-child(2){background:linear-gradient(135deg,#8c5b2c,#f0b866)}
+.sheets>i:nth-child(3){background:linear-gradient(135deg,#1f3f70,#4283d6)}
+.folder:hover,.folder:focus-visible{transform:translateY(-4px)}
+.folder:focus-visible::before{border-color:var(--amber)}
+.folder:hover .sheets>*{--f-yy:calc(var(--f-y) - 30px)}
+/* dibuka: gambar keluar dan menyebar seperti kipas */
+.folder.open{z-index:4}
+.folder.open .sheets>*{height:215px;--f-yy:var(--f-open-y);--f-x:var(--f-open-x);--f-r:var(--f-open-r);box-shadow:0 18px 40px -14px rgba(0,0,0,.75);cursor:pointer}
+.folder.open .sheets>img:hover{filter:brightness(1.08)}
+@media (max-width:760px){.folder.open .sheets>*{--f-x:calc(var(--f-open-x) * .35)}}
+.f-front{position:absolute;left:0;right:0;bottom:0;height:58%;border-radius:20px;background:linear-gradient(rgba(54,60,84,.62),rgba(20,24,38,.8));-webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px);border:1px solid rgba(255,255,255,.12);padding:14px 22px;display:grid;grid-template-columns:1fr auto;grid-template-rows:1fr auto;align-items:end;box-shadow:0 -10px 30px -12px rgba(0,0,0,.6)}
+.f-front b{grid-column:1;grid-row:1;align-self:end;font:800 2.1rem/1 var(--font)}
+.f-front em{grid-column:1;grid-row:2;font-style:normal;font-weight:600;font-size:.95rem;opacity:.85}
+.f-more{grid-column:2;grid-row:1 / 3;align-self:end;display:grid;place-items:center;width:42px;height:34px;padding:0;border:0;border-radius:12px;background:rgba(255,255,255,.08);color:#fff;cursor:pointer;transition:background .25s,transform .25s}
+.f-more svg{width:20px;height:20px;fill:currentColor}
+.f-more:hover,.folder.menu-open .f-more{background:var(--blue)}
+.f-menu{position:absolute;right:18px;bottom:58px;min-width:176px;padding:6px;border-radius:12px;background:rgba(14,17,30,.97);border:1px solid rgba(255,255,255,.12);box-shadow:0 18px 40px -12px rgba(0,0,0,.8);opacity:0;transform:translateY(6px) scale(.97);transform-origin:100% 100%;pointer-events:none;transition:opacity .2s,transform .2s;z-index:6}
+.folder.menu-open{z-index:7}
+.folder.menu-open .f-menu{opacity:1;transform:none;pointer-events:auto}
+.f-menu button{display:block;width:100%;padding:9px 12px;border:0;border-radius:8px;background:none;color:#e6e9f5;font:600 .8rem var(--font);text-align:left;cursor:pointer}
+.f-menu button:hover,.f-menu button:focus-visible{background:rgba(255,255,255,.1);outline:none}
+.folder.none .sheets{opacity:.35}
+
+/* ===== Judul PORTFOLIO raksasa: membesar saat scroll, lalu berubah menjadi halaman terang ===== */
+.ptitle{height:300vh}
+.pin2{position:sticky;top:0;height:100vh;height:100svh;z-index:1;display:grid;place-items:center;overflow:hidden;perspective:1100px;perspective-origin:50% 50%}
+.big-word{margin:0;position:relative;font:800 14vw/1 "Big Shoulders Display","Arial Narrow",Impact,sans-serif;color:#fff;white-space:nowrap;letter-spacing:.01em;transform-style:preserve-3d;
+  --s:1;--q:0;--in:0;--rz:0deg;--ry:0deg;--rx:0deg;--sk:0deg}
+/* kata utama + bayangan outline di belakangnya (kesan lorong / kedalaman) */
+.big-word .bw{display:flex;transform-style:preserve-3d;
+  transform:rotateZ(var(--rz)) rotateY(var(--ry)) rotateX(var(--rx)) skewX(var(--sk)) scale(calc(var(--s) * var(--gs,1)))}
+.big-word .bw.g{position:absolute;left:50%;top:0;translate:-50% 0;color:transparent;-webkit-text-stroke:2px rgba(196,210,255,.5);pointer-events:none;opacity:calc(var(--go,.5) * var(--in) * (1 - var(--q)))}
+.big-word .L{display:block;transform:translate3d(0,var(--ly,0),var(--lz,0)) rotateX(var(--lrx,0)) rotate(var(--lr,0))}
+.flash{position:absolute;inset:0;background:var(--lightbg);opacity:var(--fl,0);pointer-events:none}
+.ptt{font-size:clamp(2.4rem,5vw,4rem);text-transform:none;letter-spacing:0;font-family:var(--font);font-weight:800}
+@media (max-width:760px){.folders{grid-template-columns:1fr;gap:56px;margin-top:100px}}
+
+/* ===== Contact: pesan, Find Me, foto, dinding komentar ===== */
+.ct{display:grid;grid-template-columns:minmax(0,.88fr) minmax(0,1.2fr);gap:28px;align-items:start}
+.ct-l,.ct-r{display:grid;gap:28px;min-width:0}
+.c-card{padding:30px;border-radius:28px;border:1px solid rgba(20,30,90,.06)}
+.c-card:hover{transform:none}
+.c-card .c-h{font:800 1.7rem/1.1 var(--font);color:var(--blue);margin:0 0 6px}
+.c-card .c-h.sm{font-size:1.15rem;color:var(--ink);margin:0}
+.c-card .c-h em{font-style:normal;color:var(--blue)}
+[hidden]{display:none!important}
+.c-p{margin:0 0 20px;font-size:.9rem;line-height:1.5;color:#6b7190}
+.c-top{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid #eee8df}
+.tile{display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:14px;font:800 1rem var(--font);color:#fff}
+.tile svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tile svg.fill{fill:currentColor;stroke:none}
+.t-msg{width:38px;height:38px;border-radius:50%;background:#fdeede;color:var(--blue)}
+.t-msg svg{width:18px;height:18px}
+.t-mail{background:var(--blue)}.t-in{background:#0a66c2;font-size:1.05rem;letter-spacing:-.04em}
+.t-ig{background:linear-gradient(45deg,#f9a03f,#e1306c 55%,#7b3fe4)}.t-gh{background:#14172b}
+
+/* kolom input dengan ikon */
+.fld{position:relative;display:block;margin:0 0 12px}
+.fld>svg{position:absolute;left:15px;top:50%;width:18px;height:18px;margin-top:-9px;fill:none;stroke:#9a9fb6;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;transition:stroke .2s}
+.fld.ta>svg{top:20px;margin-top:0}
+form .fld input,form .fld textarea{margin:0;padding:14px 16px 14px 46px;border:1.5px solid #eee8df;border-radius:14px;background:#f8f5f0;font:400 .92rem var(--font);transition:border-color .2s,box-shadow .2s,background .2s}
+form .fld.plain input,form .fld.plain textarea{padding-left:16px}
+form .fld textarea{resize:vertical;min-height:110px}
+form .fld input:focus,form .fld textarea:focus{outline:none;background:#fff;border-color:var(--blue);box-shadow:0 0 0 4px rgba(200,90,28,.14)}
+.fld:focus-within>svg{stroke:var(--blue)}
+.fld.plain>span{display:flex;justify-content:space-between;font-size:.8rem;font-weight:700;margin:0 2px 7px;color:var(--ink)}
+.cnt{font-style:normal;font-weight:500;color:#9a9fb6}
+.cnt.hot{color:var(--blue)}
+.note{display:block;margin-top:12px;font-size:.76rem;line-height:1.5;color:#8a8fa8}
+.send{width:100%;justify-content:center;margin-top:6px;overflow:hidden}
+.send svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.send:hover svg{transform:translate(3px,-3px) rotate(8deg)}
+.send svg{transition:transform .3s}
+.send.sending svg{animation:fly .7s ease-in forwards}
+@keyframes fly{to{transform:translate(120px,-60px) scale(.5);opacity:0}}
+
+/* Find Me */
+.fm-list{display:grid;gap:4px;margin-top:14px}
+.fm{display:flex;align-items:center;gap:14px;padding:10px;border-radius:18px;color:var(--ink);transition:background .25s,transform .25s}
+.fm:hover{background:#faf3ea;transform:translateX(4px)}
+.fm-a{display:flex;align-items:center;gap:14px;flex:1;min-width:0;color:inherit}
+.fm-t{flex:1;min-width:0;line-height:1.35}
+.fm-t b{display:block;font-size:.95rem}
+.fm-t small{display:block;color:#7b819a;font-size:.8rem;overflow:hidden;text-overflow:ellipsis}
+.go{width:18px;height:18px;flex:none;fill:none;stroke:#9a9fb6;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .25s,stroke .25s}
+.fm:hover .go{transform:translate(3px,-3px);stroke:var(--blue)}
+.copy{flex:none;border:0;border-radius:999px;padding:7px 14px;font:700 .75rem var(--font);color:var(--blue);background:#fdeede;cursor:pointer;transition:background .2s,color .2s,transform .2s}
+.copy:hover{background:var(--blue);color:#fff}
+.copy.ok{background:#1f9d57;color:#fff}
+
+/* form komentar */
+.c-row{display:flex;gap:14px;align-items:flex-end;margin-bottom:0}
+.c-fields{flex:1;min-width:0}
+.av{flex:none;display:grid;place-items:center;width:44px;height:44px;margin-bottom:12px;border-radius:50%;overflow:hidden;color:#fff;font:700 .95rem var(--font);text-transform:uppercase;background:linear-gradient(135deg,#c9ccd9,#9a9fb6)}
+.av img{width:100%;height:100%;object-fit:cover;display:block}
+.up-row{display:flex;align-items:center;gap:10px;margin:2px 0 12px}
+.up{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;padding:13px 16px;border:1.5px dashed #dccfbf;border-radius:14px;background:#fbf8f3;font-size:.85rem;font-weight:600;color:#6b7190;cursor:pointer;transition:border-color .2s,background .2s,color .2s}
+.up:hover{border-color:var(--blue);background:#fff4e8;color:var(--blue)}
+.up svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.x{border:0;background:none;font:700 .8rem var(--font);color:#b8421a;cursor:pointer;padding:8px}
+
+/* daftar komentar */
+.cm-list{list-style:none;margin:0;padding:0;display:grid}
+.cm{display:flex;gap:14px;padding:16px 0;border-top:1px solid #f0ebe3;animation:pop .5s cubic-bezier(.2,.9,.2,1) both}
+.cm:first-child{border-top:0;padding-top:4px}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.97)}}
+.cm .av{margin:2px 0 0}
+.cm-b{flex:1;min-width:0}
+.cm-h{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.cm-h b{font-size:.92rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cm-h time{flex:none;font-size:.74rem;color:#9a9fb6}
+.cm-t{margin:3px 0 8px;font-size:.9rem;line-height:1.55;color:#3b4160;white-space:pre-wrap;overflow-wrap:anywhere}
+.cm-a{display:flex;gap:14px;align-items:center}
+.cm-a button{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:2px 0;font:600 .76rem var(--font);color:#9a9fb6;cursor:pointer;transition:color .2s,transform .2s}
+.cm-a button:hover{color:var(--blue)}
+.cm-a svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .25s}
+.cm-a .like.on{color:#e0364f}.cm-a .like.on svg{fill:#e0364f;stroke:#e0364f;animation:beat .45s}
+@keyframes beat{40%{transform:scale(1.45)}}
+.cm-a .del.sure{color:#b8421a}
+.cm-empty{margin:6px 0 4px;padding:26px 12px;text-align:center;font-size:.9rem;color:#8a8fa8;border:1.5px dashed #e6ddd0;border-radius:16px}
+.more{display:flex;margin:16px auto 0}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:28px;z-index:80;padding:12px 20px;border-radius:999px;background:#14172b;color:#fff;font-size:.88rem;font-weight:600;box-shadow:0 18px 40px -14px rgba(0,0,0,.5);opacity:0;transform:translate(-50%,16px);pointer-events:none;transition:opacity .3s,transform .35s cubic-bezier(.2,.9,.2,1)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:900px){.ct{grid-template-columns:1fr}}
+@media (max-width:480px){.c-card{padding:22px 18px}.c-h{font-size:1.45rem}}
+
+/* ===== Galeri: foto kegiatan terbang ke arah kamera ===== */
+.gal{height:640vh;overflow:visible}
+.gstage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden}
+.gp{position:absolute;left:50%;top:50%;margin:0;width:clamp(150px,26vw,420px);padding:6px 6px 28px;background:#fff;border-radius:14px;box-shadow:0 22px 46px -20px rgba(20,30,80,.5);will-change:transform,opacity;visibility:hidden}
+.gp.pt{width:clamp(120px,18vw,300px)}
+.gp img{display:block;width:100%;aspect-ratio:var(--ar);object-fit:cover;border-radius:9px}
+.gp figcaption{position:absolute;left:12px;right:12px;bottom:8px;font:600 .68rem/1 var(--font);color:#585e78;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ===== Folder About: kaca abu semi transparan, oranye saat disorot, kebuka sedikit ===== */
+.folder{isolation:isolate}
+.folder::before{background:linear-gradient(rgba(255,255,255,.09),rgba(255,255,255,.03));border-color:rgba(255,255,255,.16);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:border-color .35s,box-shadow .35s}
+.f-tab{height:27px;background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:border-color .35s}
+.folder::after{content:"";position:absolute;left:0;right:0;top:26px;bottom:0;z-index:0;border-radius:6px 22px 22px 22px;pointer-events:none;opacity:0;transition:opacity .35s;background:radial-gradient(260px circle at var(--mx,50%) var(--my,60%),rgba(240,161,94,.38),rgba(200,90,28,.12) 55%,transparent 78%)}
+.sheets{z-index:1}
+.sheets>i:nth-child(n){background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.07))}
+.f-front{z-index:2;transform-origin:50% 100%;background:linear-gradient(rgba(255,255,255,.10),rgba(26,26,30,.5));border-color:rgba(255,255,255,.18);-webkit-backdrop-filter:blur(4px) saturate(.75);backdrop-filter:blur(4px) saturate(.75);transition:transform .55s cubic-bezier(.2,.8,.2,1),border-color .35s,background .35s}
+.f-front b,.f-front em{text-shadow:0 1px 10px rgba(0,0,0,.65)}
+.f-front b{transition:color .3s}
+.folder:hover::before,.folder:focus-visible::before{border-color:rgba(240,161,94,.75);box-shadow:0 0 0 1px rgba(240,161,94,.22),0 22px 50px -20px rgba(240,161,94,.6)}
+.folder:hover .f-tab{border-color:rgba(240,161,94,.75)}
+.folder:hover::after{opacity:1}
+.folder:hover .f-front{border-color:rgba(240,161,94,.6)}
+.folder:hover .f-front b{color:var(--amber)}
+/* kebuka sedikit: tutup depan condong ke depan, lembar naik dan mengipas */
+.folder:not(.open):not(.menu-open):hover .f-front{transform:perspective(800px) rotateX(-13deg) translateY(4px);background:linear-gradient(rgba(255,255,255,.06),rgba(26,26,30,.42))}
+.folder:not(.open):hover .sheets>*{height:165px;--f-yy:calc(var(--f-y) + (var(--f-open-y) - var(--f-y)) * .5);--f-x:calc(var(--f-open-x) * .6);--f-r:calc(var(--f-open-r) * .6)}
+
+/* Selama langkah pertama hero, jari tidak menggulir halaman sendiri (swipe ditangani skrip) */
+.hero-lock .pin{touch-action:none}
+
+/* Garis kontur memudar halus di tepi atas/bawah, jadi tidak ada garis pemisah tajam di batas section */
+.lines{-webkit-mask-image:linear-gradient(transparent,#000 20vh,#000 calc(100% - 20vh),transparent);mask-image:linear-gradient(transparent,#000 20vh,#000 calc(100% - 20vh),transparent)}
+
+/* Tahan lama di HP tidak memunculkan menu "salin/simpan gambar" pada foto & efek Spider-Man */
+.photo-wrap,.photo-wrap *,.person{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.photo-wrap img,.person{pointer-events:none}
+
+/* HP: kaca buram folder dikurangi supaya ringan */
+@media (pointer:coarse){.folder::before,.f-tab{-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}.f-front{-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}}
