@@ -27,7 +27,11 @@ $$('a[href^="#"]').forEach((a) => {
   a.dataset.to = a.getAttribute("href"); a.removeAttribute("href");
   a.setAttribute("role", "link"); a.tabIndex = 0; a.style.cursor = "pointer";
 });
-const goTo = (a) => { const t = $(a.dataset.to); if (t) t.scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); };
+const goTo = (a) => {
+  const t = $(a.dataset.to); if (!t) return;
+  if (t.id === "home" && scrollY > innerHeight) { goStage(0, true); drawGL && drawGL.reset(); }   // hero mulai lagi dari awal saat kembali ke Home
+  t.scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
+};
 document.addEventListener("click", (e) => { const a = e.target.closest("a[data-to]"); if (a) { e.preventDefault(); goTo(a); } });
 document.addEventListener("keydown", (e) => { const a = e.target.closest && e.target.closest("a[data-to]"); if (a && e.key === "Enter") { e.preventDefault(); goTo(a); } });
 
@@ -83,99 +87,120 @@ menu.addEventListener("click", (e) => {
   if (e.target.tagName === "A") { menu.classList.remove("open"); burger.setAttribute("aria-expanded", false); }
 });
 
-/* ===== Intro bertahap: scroll 1 = dedaunan menyingkir, scroll 2 = judul muncul ===== */
+/* ===== Hero: 3 langkah, satu gerakan scroll = satu langkah penuh =====
+   0 gua menutup  ->  1 gua menjauh + judul muncul  ->  2 judul menyingkir ke pinggir & hilang  ->  3 terbang mendekati matahari, lalu halaman lanjut normal.
+   Animasinya berjalan sendiri berdasarkan waktu (bukan posisi scroll), jadi di HP lebih ringan dan selalu mulus.
+   Ubah durasi / progres tiap langkah di STEPS. p = progres terbang (0..1) yang dipakai CSS (--p) dan shader. */
 const intro = $("#home");
-const layers = $$("[data-depth]", intro);
-if (!reduce) {
+const root = document.documentElement;
+const layers = LITE ? [] : $$("[data-depth]", intro);
+if (layers.length && !reduce) {
+  let px = 0, py = 0, pf = false;
   intro.addEventListener("pointermove", (e) => {
-    const x = e.clientX - innerWidth / 2, y = e.clientY - VH() / 2;
-    layers.forEach((l) => {
-      const d = parseFloat(l.dataset.depth);
-      l.style.translate = `${x * d}px ${y * d}px`;
-    });
-  });
+    px = e.clientX - innerWidth / 2; py = e.clientY - VH() / 2;
+    if (pf) return; pf = true;
+    requestAnimationFrame(() => { pf = false; layers.forEach((l) => { const d = parseFloat(l.dataset.depth); l.style.translate = `${px * d}px ${py * d}px`; }); });
+  }, { passive: true });
 }
-const LAST = 1;                                   // satu langkah: gua menjauh + judul muncul
-const stageOf = (y = scrollY) => { const r = y / VH(); return r < .5 ? 0 : 1; };
-let stage = -1;
-function syncStage() {
-  const r = scrollY / VH();
-  const s = stage === 1 ? (r < .35 ? 0 : 1) : stage === 0 ? (r > .65 ? 1 : 0) : stageOf();   // histeresis: tidak kedip di batas
-  document.documentElement.classList.toggle("hero-lock", scrollY < VH() - 2);
 
-  if (s === stage) return;
-  stage = s;
-  intro.dataset.stage = s;
-}
-syncStage();
-let fly = 0, hp = false;                          // 0..1: terbang menembus kabut setelah judul muncul
-function heroProgress() {
-  hp = false;
-  const len = intro.offsetHeight - 2 * VH();
-  fly = Math.min(1, Math.max(0, (scrollY - VH()) / len));
+const STEPS = [                                   // tujuan tiap langkah: progres p dan lama animasi menuju ke sana (ms)
+  { p: 0,   ms: 900 },                            // 0: gua menutup (awal)
+  { p: 0,   ms: 900 },                            // 1: gua menjauh + judul muncul
+  { p: .34, ms: 1300 },                           // 2: judul menyingkir sampai hilang (CSS: opacity = 1 - p*3)
+  { p: 1,   ms: 2600 },                           // 3: mendekati matahari sampai layar penuh
+];
+const LAST = STEPS.length - 1;
+const ease = (t) => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+let stage = reduce ? 1 : 0, fly = 0;              // fly = p saat ini
+let tw = null;                                    // tween yang sedang jalan: { from, to, t0, ms }
+let drawGL = null;                                // diisi oleh pemandangan WebGL di bawah
+
+function paintHero() {
   intro.style.setProperty("--p", fly.toFixed(4));
   intro.classList.toggle("done", fly > .995);
 }
-addEventListener("scroll", () => { syncStage(); if (!hp) { hp = true; requestAnimationFrame(heroProgress); } }, { passive: true });
-onResize(() => { syncStage(); heroProgress(); });
-heroProgress();
+function goStage(n, instant) {
+  n = Math.max(0, Math.min(LAST, n));
+  stage = n;
+  intro.dataset.stage = n;
+  const to = STEPS[n].p;
+  if (instant || reduce) { tw = null; fly = to; intro.classList.remove("anim"); paintHero(); }
+  else { tw = { from: fly, to, t0: performance.now(), ms: STEPS[n].ms }; intro.classList.add("anim"); }
+  syncLock();
+}
+function syncLock() { root.classList.toggle("hero-lock", !reduce && scrollY <= 2 && stage < LAST); }
+goStage(reduce ? 1 : 0, true);
+addEventListener("scroll", syncLock, { passive: true });
+onResize(() => { paintHero(); });
 
-/* Satu gerakan scroll = satu langkah. Hanya aktif selama masih di area intro. */
-let busy = false;
-const ease = (t) => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-function goStage(n) {
-  busy = true;
-  const from = scrollY, to = n * VH(), t0 = performance.now(), dur = 800;
-  const root = document.documentElement;
-  root.style.scrollBehavior = "auto";
-  (function step(now) {
-    const t = Math.min(1, (now - t0) / dur);
-    scrollTo(0, from + (to - from) * ease(t));
-    if (t < 1) requestAnimationFrame(step);
-    else { root.style.scrollBehavior = ""; setTimeout(() => { busy = false; }, 120); }
-  })(t0);
+/* Satu loop untuk semuanya: tween progres + gambar pemandangan. Berhenti sendiri bila hero tak terlihat. */
+let lastF = 0;
+function heroLoop(now) {
+  requestAnimationFrame(heroLoop);
+  if (document.hidden || scrollY > VH()) return;
+  if (tw) {
+    const t = Math.min(1, (now - tw.t0) / tw.ms);
+    fly = tw.from + (tw.to - tw.from) * ease(t);
+    if (t >= 1) { fly = tw.to; tw = null; intro.classList.remove("anim"); }
+    paintHero();
+  }
+  if (fly > .995 && !tw) return;                  // layar sudah tertutup penuh: tidak ada yang perlu digambar
+  if (now - lastF < (LITE ? 42 : 33)) return;
+  lastF = now;
+  if (drawGL) drawGL(now);
 }
-function inZone(dir) {                            // true bila gerakan ini harus ditangani intro
-  const end = LAST * VH();
-  if (dir > 0) return scrollY < end - 2;
-  return scrollY > 2 && scrollY <= end + 2;
+requestAnimationFrame(heroLoop);
+
+/* --- Input: wheel / swipe / keyboard. Aktif hanya selama hero belum selesai (atau saat mundur dari paling atas) --- */
+let hold = false, lastWheel = 0;                  // hold: sisa inersia trackpad dari gerakan tadi tidak boleh ikut menggulir halaman
+const busy = () => tw !== null;
+function inZone(dir) {
+  if (busy() || hold) return true;
+  if (scrollY > 2) return false;
+  return dir > 0 ? stage < LAST : stage > 0;
 }
-function nudge(dir) {
-  if (busy) return;
-  goStage(Math.max(0, Math.min(LAST, stageOf() + dir)));
+function step(dir) {
+  if (busy()) return;
+  hold = true;
+  goStage(stage + dir);
 }
 if (!reduce) {
   addEventListener("wheel", (e) => {
     if (e.ctrlKey || !e.deltaY) return;
-    const dir = Math.sign(e.deltaY);
+    const dir = Math.sign(e.deltaY), now = performance.now(), quiet = now - lastWheel > 140;
+    lastWheel = now;
+    if (quiet && !busy()) hold = false;           // gerakan baru (jeda sejak event terakhir)
     if (!inZone(dir)) return;
     e.preventDefault();
-    if (Math.abs(e.deltaY) > 3) nudge(dir);
+    if (quiet && !busy() && Math.abs(e.deltaY) > 3) step(dir);
   }, { passive: false });
-  let ty = null;
-  addEventListener("touchstart", (e) => {
-    ty = document.documentElement.classList.contains("hero-lock") || scrollY <= VH() + 2 ? e.touches[0].clientY : null;
-  }, { passive: true });
+
+  let ty = null, used = false;                    // ty: awal sentuhan; used: sentuhan ini sudah dipakai untuk 1 langkah
+  addEventListener("touchstart", (e) => { ty = e.touches[0].clientY; used = false; hold = false; }, { passive: true });
   addEventListener("touchmove", (e) => {
-    if (ty === null || busy) return;
+    if (ty === null) return;
     const d = ty - e.touches[0].clientY;
+    if (used) { if (e.cancelable) e.preventDefault(); return; }
     if (Math.abs(d) < 3 || !inZone(Math.sign(d))) return;
     if (e.cancelable) e.preventDefault();
-    if (Math.abs(d) > 36) { nudge(Math.sign(d)); ty = null; }
+    if (Math.abs(d) > 36 && !busy()) { used = true; step(Math.sign(d)); }
   }, { passive: false });
   addEventListener("touchend", () => { ty = null; }, { passive: true });
+  addEventListener("touchcancel", () => { ty = null; }, { passive: true });
+
   addEventListener("keydown", (e) => {
     if (/^(INPUT|TEXTAREA|BUTTON|SELECT)$/.test(e.target.tagName)) return;
     const dir = { ArrowDown: 1, PageDown: 1, " ": e.shiftKey ? -1 : 1, ArrowUp: -1, PageUp: -1 }[e.key];
     if (!dir || !inZone(dir)) return;
-    e.preventDefault(); nudge(dir);
+    e.preventDefault();
+    if (!e.repeat) step(dir);
   });
 }
 
 /* ===== Pemandangan WebGL: gunung berlapis, kabut, awan, sinar, kamera maju saat scroll ===== */
 (function () {
   const cv = $("#gl");
-  const gl = cv.getContext("webgl", { antialias: false, alpha: false, preserveDrawingBuffer: true, powerPreference: "low-power" });
+  const gl = cv.getContext("webgl", { antialias: false, alpha: false, powerPreference: "low-power" });
   if (!gl) return;
   const FS = `
 #ifdef GL_FRAGMENT_PRECISION_HIGH
@@ -279,8 +304,8 @@ void main(){
   gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
   const U = (n) => gl.getUniformLocation(pr, n);
   const uR = U("uRes"), uT = U("uT"), uP = U("uP"), uI = U("uI"), uM = U("uM"), uG = U("uG");
-  let mx = 0, my = 0, tx = 0, ty = 0, cam = 0, lastF = 0;
-  addEventListener("pointermove", (e) => { tx = e.clientX / innerWidth * 2 - 1; ty = 1 - e.clientY / VH() * 2; });
+  let mx = 0, my = 0, tx = 0, ty = 0, cam = 0;
+  if (!LITE) addEventListener("pointermove", (e) => { tx = e.clientX / innerWidth * 2 - 1; ty = 1 - e.clientY / VH() * 2; }, { passive: true });
   const size = () => {                              // resolusi tetap (HP lebih kecil); tidak pernah berubah di tengah animasi
     const cw = cv.clientWidth, ch = cv.clientHeight; if (!cw || !ch) return;
     const d = Math.min(LITE ? .75 : Math.min(devicePixelRatio || 1, 1.25), Math.sqrt((LITE ? .16e6 : 1.6e6) / (cw * ch)));
@@ -289,16 +314,13 @@ void main(){
     gl.viewport(0, 0, w, h);
   };
   const t0 = performance.now();
-  let lastNow = t0;
   const draw = (now) => {
-    lastNow = now;
     mx += (tx - mx) * .04; my += (ty - my) * .04;
     const target = stage ? .04 + fly * .96 : 0;
     cam += (target - cam) * (stage ? .18 : .05);
-    const p = cam;
     gl.uniform2f(uR, cv.width, cv.height);
     gl.uniform1f(uT, reduce ? 14 : (now - t0) / 1000);
-    gl.uniform1f(uP, p);
+    gl.uniform1f(uP, cam);
     gl.uniform1f(uI, reduce ? 1 : (now - t0) / 3500);
     gl.uniform2f(uM, mx, my);
     gl.uniform1f(uG, LITE ? 0 : .028);
@@ -306,11 +328,8 @@ void main(){
   };
   onResize(() => { size(); draw(performance.now()); });   // gambar ulang hanya bila ukuran benar-benar berubah
   size();
-  (function frame(now) {
-    requestAnimationFrame(frame);
-    if (document.hidden || now - lastF < (LITE ? 42 : 33) || scrollY > intro.offsetHeight - VH() * .9) return;   // berhenti saat hero tak terlihat
-    lastF = now; draw(now);
-  })(t0);
+  drawGL = draw;
+  drawGL.reset = () => { cam = 0; };
   cv.classList.add("on");
 })();
 
@@ -318,14 +337,36 @@ void main(){
 const photo = $("#photo");
 if (photo) {
   const dot = $(".dot", photo);
-  photo.addEventListener("pointerenter", () => photo.classList.add("on"));
-  photo.addEventListener("pointerleave", () => photo.classList.remove("on"));
-  photo.addEventListener("pointermove", (e) => {
+  const moveTo = (cx, cy) => {
     const r = photo.getBoundingClientRect();
-    const x = e.clientX - r.left + "px", y = e.clientY - r.top + "px";
+    const x = cx - r.left + "px", y = cy - r.top + "px";
     photo.style.setProperty("--x", x); photo.style.setProperty("--y", y);
     dot.style.left = x; dot.style.top = y;
-  });
+  };
+  /* Mouse: efek mengikuti kursor */
+  photo.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") photo.classList.add("on"); });
+  photo.addEventListener("pointerleave", () => photo.classList.remove("on"));
+  photo.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse") moveTo(e.clientX, e.clientY); });
+
+  /* HP: TAHAN foto sebentar, lalu geser = efek Spider-Man mengikuti jari dan halaman tidak ikut tergulir.
+     Geser cepat tanpa menahan tetap menggulir halaman seperti biasa. */
+  let hold = null, active = false, sx = 0, sy = 0;
+  const stop = () => { clearTimeout(hold); hold = null; active = false; photo.classList.remove("on"); };
+  photo.addEventListener("touchstart", (e) => {
+    const t = e.touches[0]; sx = t.clientX; sy = t.clientY; active = false;
+    clearTimeout(hold);
+    hold = setTimeout(() => {
+      active = true; moveTo(sx, sy); photo.classList.add("on");
+      if (navigator.vibrate) navigator.vibrate(12);
+    }, 220);
+  }, { passive: true });
+  photo.addEventListener("touchmove", (e) => {
+    const t = e.touches[0];
+    if (active) { if (e.cancelable) e.preventDefault(); moveTo(t.clientX, t.clientY); sx = t.clientX; sy = t.clientY; return; }
+    if (hold && Math.hypot(t.clientX - sx, t.clientY - sy) > 6) { clearTimeout(hold); hold = null; }   // jari sudah bergerak sebelum menahan: biarkan scroll biasa
+  }, { passive: false });
+  photo.addEventListener("touchend", stop, { passive: true });
+  photo.addEventListener("touchcancel", stop, { passive: true });
 }
 
 /* ===== Timeline: item terdekat ke tengah layar menyala ===== */
